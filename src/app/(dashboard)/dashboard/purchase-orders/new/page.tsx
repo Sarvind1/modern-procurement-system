@@ -16,6 +16,12 @@ export default async function NewPurchaseOrderPage() {
   const suppliers = suppliersResult.data || []
   const products = productsResult.data || []
 
+  // Debug logging
+  console.log('📊 Suppliers found:', suppliers.length)
+  console.log('📦 Products found:', products.length)
+  console.log('🔍 Suppliers error:', suppliersResult.error)
+  console.log('🔍 Products error:', productsResult.error)
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-center mb-6">
