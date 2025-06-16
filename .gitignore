@@ -41,6 +41,29 @@ next-env.d.ts
 supabase/.temp/
 supabase/migrations/
 supabase/seed.sql
+supabase/.branches/
+supabase/.config/
+supabase/.secrets/
+supabase/.temp/
+supabase/.wrangler/
+supabase/functions/.temp/
+supabase/functions/dist/
+supabase/functions/node_modules/
+supabase/functions/.env
+supabase/functions/.env.*
+supabase/functions/*.log
+supabase/functions/coverage/
+supabase/functions/.next/
+supabase/functions/build/
+supabase/functions/dist/
+supabase/functions/.cache/
+supabase/functions/.pnp/
+supabase/functions/.pnp.js
+supabase/functions/.vercel/
+supabase/functions/.env.local
+supabase/functions/.env.development.local
+supabase/functions/.env.test.local
+supabase/functions/.env.production.local
 
 # Logs
 logs
