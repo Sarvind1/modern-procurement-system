@@ -43,7 +43,7 @@ src/
 - `profiles` - User data linked to auth.users
 - `suppliers` - Vendor information
 - `products` - Product catalog with SKU/pricing
-- `purchase_orders` - PO headers with status
+- `purchase_orders` - PO headers with status (uses `total_amount` column)
 - `po_items` - Line items with calculated totals
 
 **Security**: RLS policies allow authenticated users full access to all tables.
@@ -76,8 +76,9 @@ await supabase.from('table').insert(data)
 ### Dashboard Metrics
 - Real-time data fetching from Supabase
 - Displays actual counts for purchase orders, products, suppliers
-- Shows total value of all purchase orders
+- Shows total value of all purchase orders (using `total_amount` column)
 - Lists recent purchase orders with status
+- Includes error logging for debugging database issues
 
 ### UI Components
 - Radix UI primitives with Tailwind styling
@@ -96,7 +97,7 @@ await supabase.from('table').insert(data)
 
 - ✅ User authentication (login/signup)
 - ✅ Protected dashboard with navigation
-- ✅ Real-time dashboard metrics
+- ✅ Real-time dashboard metrics with proper error handling
 - ✅ Purchase order creation with dynamic line items
 - ✅ Real-time form calculations
 - ✅ Supplier/product data integration
@@ -125,7 +126,17 @@ await supabase.from('table').insert(data)
 4. Create purchase orders with multiple items
 5. Verify data persistence and calculations
 6. Check dashboard displays correct metrics
+7. Monitor browser console for database errors
 
 ## Recent Updates
 
-- **Dashboard Fix (2025-06-16)**: Updated dashboard to fetch real purchase order counts and metrics from database instead of showing hardcoded zeros
+- **Dashboard Fix (2025-06-16)**: 
+  - Fixed dashboard showing 0 purchase orders by correcting column name from `total` to `total_amount`
+  - Added error logging to help identify database schema mismatches
+  - Dashboard now shows real-time counts and total values from database
+
+## Important Schema Notes
+
+- Purchase orders table uses `total_amount` not `total` for the order value
+- Always verify column names against migration files when debugging
+- Use browser console to check for SQL errors like "column does not exist"
