@@ -1,4 +1,5 @@
 import { getCurrentProfile } from '@/lib/auth'
+import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -12,6 +13,23 @@ import {
 
 export default async function DashboardPage() {
   const profile = await getCurrentProfile()
+  const supabase = await createClient()
+
+  // Fetch actual counts from database
+  const [purchaseOrders, products, suppliers] = await Promise.all([
+    supabase.from('purchase_orders').select('id, status, total').order('created_at', { ascending: false }),
+    supabase.from('products').select('id', { count: 'exact' }),
+    supabase.from('suppliers').select('id', { count: 'exact' })
+  ])
+
+  // Calculate metrics
+  const totalPOs = purchaseOrders.data?.length || 0
+  const activePOs = purchaseOrders.data?.filter(po => po.status === 'pending').length || 0
+  const totalProducts = products.count || 0
+  const totalSuppliers = suppliers.count || 0
+  
+  // Calculate total value (sum of all purchase orders)
+  const totalValue = purchaseOrders.data?.reduce((sum, po) => sum + (po.total || 0), 0) || 0
 
   return (
     <div className="p-8">
@@ -53,9 +71,9 @@ export default async function DashboardPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{totalPOs}</div>
             <p className="text-xs text-muted-foreground">
-              Active orders
+              {activePOs} active orders
             </p>
           </CardContent>
         </Card>
@@ -68,7 +86,7 @@ export default async function DashboardPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{totalProducts}</div>
             <p className="text-xs text-muted-foreground">
               In catalog
             </p>
@@ -83,7 +101,7 @@ export default async function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{totalSuppliers}</div>
             <p className="text-xs text-muted-foreground">
               Active suppliers
             </p>
@@ -98,9 +116,9 @@ export default async function DashboardPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$0</div>
+            <div className="text-2xl font-bold">${totalValue.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">
-              This month
+              All purchase orders
             </p>
           </CardContent>
         </Card>
@@ -110,15 +128,43 @@ export default async function DashboardPage() {
       <div className="mt-8">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>Recent Purchase Orders</CardTitle>
             <CardDescription>
-              Latest updates to your procurement system
+              Latest purchase orders in your system
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              No recent activity. Start by creating your first purchase order.
-            </div>
+            {purchaseOrders.data && purchaseOrders.data.length > 0 ? (
+              <div className="space-y-4">
+                {purchaseOrders.data.slice(0, 5).map((po) => (
+                  <div key={po.id} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">
+                        Order #{po.id.slice(0, 8)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Status: {po.status}
+                      </p>
+                    </div>
+                    <div className="text-sm font-semibold">
+                      ${po.total?.toFixed(2) || '0.00'}
+                    </div>
+                  </div>
+                ))}
+                {purchaseOrders.data.length > 5 && (
+                  <Link 
+                    href="/dashboard/purchase-orders" 
+                    className="text-sm text-blue-600 hover:underline block text-center pt-2"
+                  >
+                    View all purchase orders →
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No recent activity. Start by creating your first purchase order.
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
