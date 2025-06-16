@@ -17,10 +17,21 @@ export default async function NewPurchaseOrderPage() {
   const products = productsResult.data || []
 
   // Debug logging
-  console.log('📊 Suppliers found:', suppliers.length)
-  console.log('📦 Products found:', products.length)
-  console.log('🔍 Suppliers error:', suppliersResult.error)
-  console.log('🔍 Products error:', productsResult.error)
+  console.log('🔍 Database Query Results:')
+  console.log('Suppliers:', {
+    count: suppliers.length,
+    data: suppliers,
+    error: suppliersResult.error,
+    status: suppliersResult.status,
+    statusText: suppliersResult.statusText
+  })
+  console.log('Products:', {
+    count: products.length,
+    data: products,
+    error: productsResult.error,
+    status: productsResult.status,
+    statusText: productsResult.statusText
+  })
 
   return (
     <div className="p-8 max-w-4xl mx-auto">

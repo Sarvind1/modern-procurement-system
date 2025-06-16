@@ -20,10 +20,7 @@ CREATE POLICY "Users can update own profile" ON profiles
 -- Admins can view all profiles
 CREATE POLICY "Admins can view all profiles" ON profiles
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    auth.jwt() ->> 'role' = 'admin'
   );
 
 -- Suppliers policies
@@ -34,10 +31,7 @@ CREATE POLICY "Authenticated users can view suppliers" ON suppliers
 -- Only admins can modify suppliers
 CREATE POLICY "Admins can manage suppliers" ON suppliers
   FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    auth.jwt() ->> 'role' = 'admin'
   );
 
 -- Products policies
@@ -48,10 +42,7 @@ CREATE POLICY "Authenticated users can view products" ON products
 -- Only admins can modify products
 CREATE POLICY "Admins can manage products" ON products
   FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    auth.jwt() ->> 'role' = 'admin'
   );
 
 -- Purchase orders policies
@@ -62,10 +53,7 @@ CREATE POLICY "Users can view own purchase orders" ON purchase_orders
 -- Admins can view all purchase orders
 CREATE POLICY "Admins can view all purchase orders" ON purchase_orders
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    auth.jwt() ->> 'role' = 'admin'
   );
 
 -- Users can create purchase orders
@@ -81,10 +69,7 @@ CREATE POLICY "Users can update own draft purchase orders" ON purchase_orders
 -- Admins can update any purchase order
 CREATE POLICY "Admins can update all purchase orders" ON purchase_orders
   FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    auth.jwt() ->> 'role' = 'admin'
   );
 
 -- Purchase order items policies
@@ -100,10 +85,7 @@ CREATE POLICY "Users can view own po items" ON po_items
 -- Admins can view all po items
 CREATE POLICY "Admins can view all po items" ON po_items
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    auth.jwt() ->> 'role' = 'admin'
   );
 
 -- Users can manage items for their own draft purchase orders
@@ -120,10 +102,7 @@ CREATE POLICY "Users can manage own po items" ON po_items
 -- Admins can manage all po items
 CREATE POLICY "Admins can manage all po items" ON po_items
   FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    auth.jwt() ->> 'role' = 'admin'
   );
 
 -- Inventory movements policies
@@ -134,10 +113,7 @@ CREATE POLICY "Authenticated users can view inventory movements" ON inventory_mo
 -- Only admins can create inventory movements
 CREATE POLICY "Admins can create inventory movements" ON inventory_movements
   FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND role = 'admin'
-    ) AND created_by = auth.uid()
+    auth.jwt() ->> 'role' = 'admin' AND created_by = auth.uid()
   );
 
 -- Function to create profile on user signup

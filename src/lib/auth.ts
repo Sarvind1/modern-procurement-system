@@ -11,7 +11,16 @@ export async function getCurrentUser() {
   
   const {
     data: { user },
+    error
   } = await supabase.auth.getUser()
+
+  // Debug logging
+  console.log('🔐 Auth Status:', {
+    isAuthenticated: !!user,
+    userId: user?.id,
+    email: user?.email,
+    error: error
+  })
 
   return user
 }
