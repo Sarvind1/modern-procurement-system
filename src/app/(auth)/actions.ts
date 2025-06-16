@@ -21,30 +21,46 @@ const signupSchema = z.object({
  * Server action to handle user login
  */
 export async function login(formData: FormData) {
+  console.log('🔐 Login attempt started')
+  
   const supabase = await createActionClient()
   
-  const validatedFields = loginSchema.safeParse({
-    email: formData.get('email'),
-    password: formData.get('password'),
-  })
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  
+  console.log('📧 Login attempt for email:', email)
+  
+  const validatedFields = loginSchema.safeParse({ email, password })
 
   if (!validatedFields.success) {
+    console.log('❌ Validation failed:', validatedFields.error.flatten().fieldErrors)
     return {
       error: 'Invalid fields',
       fieldErrors: validatedFields.error.flatten().fieldErrors,
     }
   }
 
-  const { email, password } = validatedFields.data
+  console.log('✅ Validation passed, attempting Supabase auth...')
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: validatedFields.data.email,
+    password: validatedFields.data.password,
   })
 
   if (error) {
+    console.log('❌ Supabase auth error:', error.message)
     return {
       error: error.message,
+    }
+  }
+
+  if (data.user) {
+    console.log('✅ Login successful for user:', data.user.id)
+    console.log('🔄 Revalidating paths and redirecting...')
+  } else {
+    console.log('⚠️ No user data returned from Supabase')
+    return {
+      error: 'Authentication failed - no user data',
     }
   }
 
@@ -56,36 +72,52 @@ export async function login(formData: FormData) {
  * Server action to handle user signup
  */
 export async function signup(formData: FormData) {
+  console.log('📝 Signup attempt started')
+  
   const supabase = await createActionClient()
   
-  const validatedFields = signupSchema.safeParse({
-    email: formData.get('email'),
-    password: formData.get('password'),
-    fullName: formData.get('fullName'),
-  })
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const fullName = formData.get('fullName') as string
+  
+  console.log('📧 Signup attempt for email:', email)
+  
+  const validatedFields = signupSchema.safeParse({ email, password, fullName })
 
   if (!validatedFields.success) {
+    console.log('❌ Signup validation failed:', validatedFields.error.flatten().fieldErrors)
     return {
       error: 'Invalid fields',
       fieldErrors: validatedFields.error.flatten().fieldErrors,
     }
   }
 
-  const { email, password, fullName } = validatedFields.data
+  console.log('✅ Signup validation passed, creating user...')
 
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
+  const { data, error } = await supabase.auth.signUp({
+    email: validatedFields.data.email,
+    password: validatedFields.data.password,
     options: {
       data: {
-        full_name: fullName,
+        full_name: validatedFields.data.fullName,
       },
     },
   })
 
   if (error) {
+    console.log('❌ Supabase signup error:', error.message)
     return {
       error: error.message,
+    }
+  }
+
+  if (data.user) {
+    console.log('✅ Signup successful for user:', data.user.id)
+    console.log('🔄 Revalidating paths and redirecting...')
+  } else {
+    console.log('⚠️ No user data returned from signup')
+    return {
+      error: 'Signup failed - no user data',
     }
   }
 
@@ -97,9 +129,17 @@ export async function signup(formData: FormData) {
  * Server action to handle user logout
  */
 export async function logout() {
+  console.log('🚪 Logout attempt started')
+  
   const supabase = await createActionClient()
   
-  await supabase.auth.signOut()
+  const { error } = await supabase.auth.signOut()
+  
+  if (error) {
+    console.log('❌ Logout error:', error.message)
+  } else {
+    console.log('✅ Logout successful')
+  }
   
   revalidatePath('/', 'layout')
   redirect('/login')
