@@ -15,21 +15,33 @@ export default async function DashboardPage() {
   const profile = await getCurrentProfile()
   const supabase = await createClient()
 
-  // Fetch actual counts from database
-  const [purchaseOrders, products, suppliers] = await Promise.all([
+  // Fetch actual counts from database with better error handling
+  const [purchaseOrdersResult, productsResult, suppliersResult] = await Promise.all([
     supabase.from('purchase_orders').select('id, status, total').order('created_at', { ascending: false }),
     supabase.from('products').select('id', { count: 'exact' }),
     supabase.from('suppliers').select('id', { count: 'exact' })
   ])
 
-  // Calculate metrics
-  const totalPOs = purchaseOrders.data?.length || 0
-  const activePOs = purchaseOrders.data?.filter(po => po.status === 'pending').length || 0
-  const totalProducts = products.count || 0
-  const totalSuppliers = suppliers.count || 0
+  // Log errors for debugging
+  if (purchaseOrdersResult.error) {
+    console.error('Error fetching purchase orders:', purchaseOrdersResult.error)
+  }
+  if (productsResult.error) {
+    console.error('Error fetching products:', productsResult.error)
+  }
+  if (suppliersResult.error) {
+    console.error('Error fetching suppliers:', suppliersResult.error)
+  }
+
+  // Calculate metrics with proper null checks
+  const purchaseOrders = purchaseOrdersResult.data || []
+  const totalPOs = purchaseOrders.length
+  const activePOs = purchaseOrders.filter(po => po.status === 'pending').length
+  const totalProducts = productsResult.count || 0
+  const totalSuppliers = suppliersResult.count || 0
   
   // Calculate total value (sum of all purchase orders)
-  const totalValue = purchaseOrders.data?.reduce((sum, po) => sum + (po.total || 0), 0) || 0
+  const totalValue = purchaseOrders.reduce((sum, po) => sum + (po.total || 0), 0)
 
   return (
     <div className="p-8">
@@ -134,9 +146,9 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {purchaseOrders.data && purchaseOrders.data.length > 0 ? (
+            {purchaseOrders.length > 0 ? (
               <div className="space-y-4">
-                {purchaseOrders.data.slice(0, 5).map((po) => (
+                {purchaseOrders.slice(0, 5).map((po) => (
                   <div key={po.id} className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium">
@@ -151,7 +163,7 @@ export default async function DashboardPage() {
                     </div>
                   </div>
                 ))}
-                {purchaseOrders.data.length > 5 && (
+                {purchaseOrders.length > 5 && (
                   <Link 
                     href="/dashboard/purchase-orders" 
                     className="text-sm text-blue-600 hover:underline block text-center pt-2"
