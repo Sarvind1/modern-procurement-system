@@ -200,5 +200,5 @@ export async function createPurchaseOrder(formData: FormData) {
   }
 
   revalidatePath('/dashboard/purchase-orders')
-  redirect(`/dashboard/purchase-orders/${po.id}`)
+  redirect('/dashboard/purchase-orders')
 }
