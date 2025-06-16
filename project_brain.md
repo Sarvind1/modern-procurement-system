@@ -21,7 +21,7 @@ src/
 │   │   └── signup/page.tsx
 │   ├── (dashboard)/         # Protected routes
 │   │   ├── layout.tsx       # Sidebar navigation
-│   │   ├── dashboard/page.tsx
+│   │   ├── dashboard/page.tsx  # Dashboard with real-time metrics
 │   │   └── purchase-orders/
 │   │       ├── actions.ts   # PO CRUD operations
 │   │       ├── page.tsx     # PO listing
@@ -73,6 +73,12 @@ await supabase.from('table').insert(data)
 - Dynamic forms (PO creation) use indexed form data parsing
 - Redirect after successful operations
 
+### Dashboard Metrics
+- Real-time data fetching from Supabase
+- Displays actual counts for purchase orders, products, suppliers
+- Shows total value of all purchase orders
+- Lists recent purchase orders with status
+
 ### UI Components
 - Radix UI primitives with Tailwind styling
 - Reusable components following shadcn/ui patterns
@@ -90,6 +96,7 @@ await supabase.from('table').insert(data)
 
 - ✅ User authentication (login/signup)
 - ✅ Protected dashboard with navigation
+- ✅ Real-time dashboard metrics
 - ✅ Purchase order creation with dynamic line items
 - ✅ Real-time form calculations
 - ✅ Supplier/product data integration
@@ -117,3 +124,8 @@ await supabase.from('table').insert(data)
 3. Test authentication flow
 4. Create purchase orders with multiple items
 5. Verify data persistence and calculations
+6. Check dashboard displays correct metrics
+
+## Recent Updates
+
+- **Dashboard Fix (2025-06-16)**: Updated dashboard to fetch real purchase order counts and metrics from database instead of showing hardcoded zeros
