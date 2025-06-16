@@ -15,9 +15,9 @@ export default async function DashboardPage() {
   const profile = await getCurrentProfile()
   const supabase = await createClient()
 
-  // Fetch actual counts from database with better error handling
+  // Fetch actual counts from database with correct column names
   const [purchaseOrdersResult, productsResult, suppliersResult] = await Promise.all([
-    supabase.from('purchase_orders').select('id, status, total').order('created_at', { ascending: false }),
+    supabase.from('purchase_orders').select('id, status, total_amount').order('created_at', { ascending: false }),
     supabase.from('products').select('id', { count: 'exact' }),
     supabase.from('suppliers').select('id', { count: 'exact' })
   ])
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
   const totalSuppliers = suppliersResult.count || 0
   
   // Calculate total value (sum of all purchase orders)
-  const totalValue = purchaseOrders.reduce((sum, po) => sum + (po.total || 0), 0)
+  const totalValue = purchaseOrders.reduce((sum, po) => sum + (Number(po.total_amount) || 0), 0)
 
   return (
     <div className="p-8">
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="text-sm font-semibold">
-                      ${po.total?.toFixed(2) || '0.00'}
+                      ${Number(po.total_amount)?.toFixed(2) || '0.00'}
                     </div>
                   </div>
                 ))}
