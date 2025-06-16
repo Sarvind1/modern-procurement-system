@@ -90,6 +90,27 @@ redirect('/dashboard/purchase-orders')
 **Problem**: Regular users couldn't access data due to admin-only policies
 **Fix**: Allow authenticated users to read/write core data
 
+### 9. Database Column Name Mismatches
+**Problem**: Dashboard showed 0 purchase orders despite data existing
+```typescript
+// ❌ Wrong column name
+const { data } = await supabase.from('purchase_orders').select('id, status, total')
+
+// ✅ Correct column name from schema
+const { data } = await supabase.from('purchase_orders').select('id, status, total_amount')
+```
+
+**Fix**: Always verify actual database column names against schema
+- Check migration files for exact column names
+- Database uses `total_amount` not `total` for purchase_orders
+- Products/suppliers counts worked because they were using count queries
+
+**Debugging Steps**:
+1. Check browser console for database errors
+2. Look for SQL error messages like "column does not exist"
+3. Verify column names in migration files
+4. Add error logging to identify issues
+
 ## Best Practices Learned
 
 ### File Organization
@@ -124,6 +145,7 @@ src/
 1. Add comprehensive logging to server actions
 2. Provide user feedback for all error states
 3. Use proper TypeScript error types
+4. Log database errors to identify column name issues
 
 ### Dependency Management
 1. Install all required peer dependencies
@@ -135,6 +157,7 @@ src/
 2. Test with actual user accounts, not just signup
 3. Verify all routes exist before redirecting
 4. Check browser network tab for API errors
+5. Always verify database schema matches code expectations
 
 ## Quick Debugging Checklist
 
@@ -147,6 +170,7 @@ src/
 - [ ] RLS policies too restrictive?
 - [ ] Migrations applied?
 - [ ] User authenticated?
+- [ ] Column names match schema?
 
 ### Route Errors
 - [ ] File structure matches URLs?
