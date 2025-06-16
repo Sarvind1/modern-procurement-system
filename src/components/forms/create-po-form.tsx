@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Trash2 } from 'lucide-react'
 import { Product, Supplier } from '@/types/database'
-import { createPurchaseOrder } from '../../app/(dashboard)/dashboard/purchase-orders/actions'
+import { createPurchaseOrder } from '../actions'
 import { formatCurrency } from '@/lib/utils'
 
 interface CreatePOFormProps {
@@ -44,11 +44,6 @@ export default function CreatePOForm({ suppliers, products }: CreatePOFormProps)
     const updatedItems = [...items]
     updatedItems[index] = { ...updatedItems[index], [field]: value }
     setItems(updatedItems)
-  }
-
-  const getProductPrice = (productId: string) => {
-    const product = products.find(p => p.id === productId)
-    return product?.cost || 0
   }
 
   const calculateTotal = () => {
