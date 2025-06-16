@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient } from './server'
+import { createClient } from './supabase/server'
 import { Profile } from '@/types/database'
 
 /**
