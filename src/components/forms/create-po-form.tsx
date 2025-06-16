@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Trash2 } from 'lucide-react'
 import { Product, Supplier } from '@/types/database'
-import { createPurchaseOrder } from '../actions'
+import { createPurchaseOrder } from '../../app/(dashboard)/dashboard/purchase-orders/actions'
 import { formatCurrency } from '@/lib/utils'
 
 interface CreatePOFormProps {
