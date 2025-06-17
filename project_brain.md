@@ -9,6 +9,85 @@
 - Row Level Security (RLS) for data protection
 - Type-safe database operations with generated types
 - Form handling via Server Actions (no client-side state management)
+- **Microservices-ready**: Code structured for easy extraction when scaling
+
+## Long-term Vision & Scaling Strategy
+
+### Current Scope (MVP - Phase 1)
+Building a SaaS platform for suppliers, traders, and Amazon sellers enabling global procurement and selling.
+
+### Future Requirements
+- **Marketplace Integrations**: Amazon, eBay, Shopify, etc.
+- **D2C Setup**: Direct-to-consumer capabilities
+- **FFW Tracking**: Freight forwarding and logistics
+- **Document Management**: PDFs, invoices, customs docs
+- **Multi-Portal System**: Supplier portal, vendor portal, buyer portal
+- **ERP Integrations**: Multiple custom ERPs based on customer needs
+
+### Scaling Architecture Plan
+
+#### Phase 1 (Current - 0-6 months)
+- Next.js + Supabase monolith
+- PostgreSQL for relational data (ACID compliance for financial data)
+- Server Actions for all business logic
+- Start with API routes for PDF generation
+
+#### Phase 2 (6-12 months)
+- Extract complex operations to Next.js API routes
+- Add queue system (Bull/SQS) for:
+  - Marketplace sync operations
+  - Document processing
+  - Email notifications
+- S3 for document storage
+- Redis for caching hot data
+
+#### Phase 3 (12-18 months) - Microservices Migration
+```
+Services to extract:
+├── marketplace-sync-service    # Handle API integrations
+├── document-service           # PDF generation, storage
+├── inventory-service          # Real-time inventory across channels
+├── shipping-service           # FFW tracking, logistics
+├── notification-service       # Email, SMS, webhooks
+└── analytics-service          # Reporting, data warehouse
+```
+
+#### Phase 4 (Scale)
+- Event-driven architecture (Kafka/EventBridge)
+- Multi-region deployment
+- Elasticsearch for product search
+- ML services for demand forecasting
+- Data lake for analytics
+
+### Code Patterns for Future Migration
+
+**Service-Ready Structure**:
+```typescript
+// Current: Server Action
+export async function createPurchaseOrder(data) {
+  // Business logic here
+}
+
+// Future: Easy to extract to microservice
+// Just move logic to express/fastify service
+// Keep same function signature
+```
+
+**Database Access Pattern**:
+```typescript
+// Use repository pattern for easy migration
+class PurchaseOrderRepository {
+  async create(data) { /* Supabase now, custom DB later */ }
+  async findById(id) { /* Easy to swap implementation */ }
+}
+```
+
+**Why This Approach**:
+- Start simple, validate product-market fit
+- Current stack handles thousands of users easily
+- PostgreSQL + proper indexing scales to millions of records
+- Modular code makes service extraction straightforward
+- Measure real bottlenecks before adding complexity
 
 ## Project Structure
 
@@ -47,6 +126,14 @@ src/
 - `po_items` - Line items with calculated totals
 
 **Security**: RLS policies allow authenticated users full access to all tables.
+
+**Future Considerations**:
+- PostgreSQL for transactional data (orders, inventory)
+- Consider DynamoDB only for:
+  - Session storage
+  - User preferences
+  - Real-time notifications
+  - IoT/sensor data (if applicable)
 
 ## Key Implementation Details
 
@@ -135,8 +222,38 @@ await supabase.from('table').insert(data)
   - Added error logging to help identify database schema mismatches
   - Dashboard now shows real-time counts and total values from database
 
+- **Architecture Planning (2025-06-17)**:
+  - Defined long-term vision as global procurement SaaS
+  - Created phased approach for scaling from monolith to microservices
+  - Established patterns for future service extraction
+  - Confirmed PostgreSQL over NoSQL for ACID compliance
+
 ## Important Schema Notes
 
 - Purchase orders table uses `total_amount` not `total` for the order value
 - Always verify column names against migration files when debugging
 - Use browser console to check for SQL errors like "column does not exist"
+
+## Architecture Decision Log
+
+### Why PostgreSQL over DynamoDB?
+- **ACID compliance** crucial for financial transactions
+- Complex relationships between orders, suppliers, inventory
+- Rich querying needed for reports
+- Foreign keys ensure data integrity
+- DynamoDB only if we need 100k+ requests/second (unlikely for B2B)
+
+### Why Start with Monolith?
+- Faster time to market
+- Easier to refactor when requirements are clear
+- Avoid premature optimization
+- Learn from real usage patterns
+- Current stack easily handles thousands of users
+
+### Service Extraction Triggers
+Extract to microservices when:
+- Marketplace sync takes >30 seconds
+- PDF generation blocks user requests
+- Need to scale teams independently
+- Different services need different tech stacks
+- Specific services need geographic distribution
